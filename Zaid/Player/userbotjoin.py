@@ -2,6 +2,7 @@ import asyncio
 from config import BOT_USERNAME, SUDO_USERS
 from Zaid.decorators import authorized_users_only, sudo_users_only, errors
 from Zaid.filters import command, other_filters
+from Zaid.filters import command2, other_filters
 from Zaid.main import Test as USER
 from pyrogram import filters
 from Zaid.main import bot as Client
@@ -43,6 +44,40 @@ async def join_group(client, message):
         f"✅ **userbot succesfully entered chat**",
     )
 
+@Client.on_message(
+    command2(["انضم","نضم","استدعاء","الاك المساعد"]) & ~filters.private & ~filters.bot
+)
+@authorized_users_only
+@errors
+async def join_group(client, message):
+    chid = message.chat.id
+    try:
+        invitelink = await client.export_chat_invite_link(chid)
+    except BaseException:
+        await message.reply_text(
+            "• **i m not have permission:**\n\n» ❌ __Add Users__",
+        )
+        return
+
+    try:
+        user = await USER.get_me()
+    except BaseException:
+        user.first_name = "music assistant"
+
+    try:
+        await USER.join_chat(invitelink)
+    except UserAlreadyParticipant:
+        pass
+    except Exception as e:
+        print(e)
+        await message.reply_text(
+            f"🛑 Flood Wait Error 🛑 \n\n**userbot couldn t join your group due to heavy join requests for userbot**"
+            "\n\n**or add assistant manually to your Group and try again**",
+        )
+        return
+    await message.reply_text(
+        f"✅ **userbot succesfully entered chat**",
+    )
 
 @Client.on_message(command(["userbotleave",
                             f"leave@{BOT_USERNAME}"]) & filters.group & ~filters.edited)
